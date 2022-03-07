@@ -36,28 +36,13 @@ export default function graphHistogram(colourFrequencies) {
   var layout = { 
     margin: {
           l: 30,
-          r: 10,
+          r: 50,
           b: 20,
           t: 20,
           pad: 4,
     },
-    showlegend: false
   }
   Plotly.newPlot("tester", data, layout);
 
 
 }
-
-// var layout = {
-//   margin: {
-//     l: 30,
-//     r: 50,
-//     b: 20,
-//     t: 20,
-//     pad: 4,
-//   },
-//   bargap: 0.05,
-//   bargroupgap: 0.2,
-//   barmode: "overlay",
-// };
-// Plotly.newPlot("tester", data, layout);
