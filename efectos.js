@@ -2,7 +2,7 @@ import histogram from "./histograma.js";
 
 var img = new Image();
 img.crossOrigin = "Anonymous";
-img.src = "descarga.png";
+img.src = "./descarga.png";
 img.onload = function () {
   draw(this);
 };
@@ -28,7 +28,6 @@ function draw(img) {
   var getColourFrequencies = function () {
     const startIndex = 0; // StartIndex same as RGB enum: R=0, G=1, B=2
 
-    let maxFrequency = 0;
     const r = Array(256).fill(0);
     const g = Array(256).fill(0);
     const b = Array(256).fill(0);
@@ -37,21 +36,19 @@ function draw(img) {
       r[data[i]]++;
       g[data[i+1]]++;
       b[data[i+2]]++;
-
-      if (r[data[i]] > maxFrequency) {
-        maxFrequency++;
-      }
     }
 
     const result = {
       r,
       g, 
       b,
-      maxFrequency,
     };
 
     return result;
   };
+
+  
+  var hist = getColourFrequencies() ;
 
   var invert = function () {
     for (var i = 0; i < copyData.length; i += 4) {
@@ -72,13 +69,31 @@ function draw(img) {
     ctxModify.putImageData(copyImageData, 0, 0);
   };
   var automaticContrast = function () {
+
+    let rMin = Math.min.apply(null, hist.r)
+    let gMin = Math.min.apply(null, hist.g)
+    let bMin = Math.min.apply(null, hist.b)
+    let rMax = Math.max.apply(null, hist.r)
+    let gMax = Math.max.apply(null, hist.g)
+    let bMax = Math.max.apply(null, hist.b)
+
+
     for (var i = 0; i < data.length; i += 4) {
 
-      var r = (data[i] = ((data[i] - 0) * 255) / (255 - 0)); // red
-      data[i + 1] = ((data[i + 1] - 0) * 255) / (255 - 0); // green
-      data[i + 2] = ((data[i + 2] - 0) * 255) / (255 - 0); // blue
+      copyData[i]     = (((data[i]     - rMin)  / (rMax - rMin))* 255 ); // red
+      copyData[i + 1] = (((data[i + 1] - gMin)  / (gMax - gMin))* 255 ); // green
+      copyData[i + 2] = (((data[i + 2] - bMin)  / (bMax - bMin))* 255 ); // blue
+
+      if(copyData[i]    > 255) copyData[i]      = 255;
+      if(copyData[i + 1]> 255) copyData[i + 1]  = 255;
+      if(copyData[i + 2]> 255) copyData[i + 2]  = 255;
+
+      if(copyData[i]    <0) copyData[i]     = 0;
+      if(copyData[i + 1]<0) copyData[i + 1] = 0;
+      if(copyData[i + 2]<0) copyData[i + 2] = 0;
+
     }
-    ctxModify.putImageData(imageData, 0, 0);
+    ctxModify.putImageData(copyImageData, 0, 0);
   };
   var brillo = function (k) {
     var brightness = k || 100
@@ -95,28 +110,14 @@ function draw(img) {
         copyData[i + 2] = data[i + 2] - brightness
       }
 
-      if (copyData[i] > 255) {
-        copyData[i] = 255;
-      }
-      if (copyData[i + 1] > 255) {
-        copyData[i + 1] = 255;
-      }
-      if (copyData[i + 2] > 255) {
-        copyData[i + 2] = 255;
-      }
+      if(copyData[i]> 255) copyData[i] = 255;
+      if(copyData[i + 1]> 255) copyData[i + 1] = 255;
+      if(copyData[i + 2]> 255) copyData[i + 2] = 255;
 
-      if (copyData[i] < 0) {
-        copyData[i] = 0;
-      }
-      if (copyData[i + 1] < 0) {
-        copyData[i + 1] = 0;
-      }
-      if (copyData[i + 2] < 0) {
-        copyData[i + 2] = 0;
-      }
+      if(copyData[i]    <0) copyData[i] = 0;
+      if(copyData[i + 1]<0) copyData[i + 1] = 0;
+      if(copyData[i + 2]<0) copyData[i + 2] = 0;
     }
-    console.log(data,copyData)
-
     ctxModify.putImageData(copyImageData, 0, 0);
   };
   var averageContrast = function (k_) {
@@ -143,15 +144,13 @@ function draw(img) {
 
   };
   var raizNEsima = function (k_) {
-    // copyData = data;
-    let k = k_ || 0;
+    let k = parseFloat(1/k_) ;
+    console.log();
 
     for (var i = 0; i < copyData.length; i += 4) {
-      copyData[i]     = Math.floor(Math.sqrt(copyData[i],     k));
-      copyData[i + 1] = Math.floor(Math.sqrt(copyData[i + 1], k));
-      copyData[i + 2] = Math.floor(Math.sqrt(copyData[i + 2], k));
-
-      console.log(Math.floor(Math.sqrt(copyData[i],     k)));
+      copyData[i]     = Math.floor(Math.pow((data[i]/255),     k)*255);
+      copyData[i + 1] = Math.floor(Math.pow((data[i + 1]/255), k)*255);
+      copyData[i + 2] = Math.floor(Math.pow((data[i + 2]/255), k)*255);
 
       if(copyData[i]> 255) copyData[i] = 255;
       if(copyData[i + 1]> 255) copyData[i + 1] = 255;
@@ -173,7 +172,7 @@ function draw(img) {
     averageContrast(inputAverageContrast.value)
   }
   var inputRaizN = document.getElementById("raiz-n-esima");
-  inputRaizN.oninput = (e)=>{
+  inputRaizN.onchange = (e)=>{
     raizNEsima(inputRaizN.value)
   }
   var inputBrillo = document.getElementById("brillo");
@@ -185,5 +184,7 @@ function draw(img) {
   var btnAverageContrast = document.getElementById("btn-gray");
   btnAverageContrast.addEventListener("click", grayscale);
 
+  var btnAutomaticContrast = document.getElementById("automaticContrast");
+  btnAutomaticContrast.addEventListener("click", automaticContrast);
   histogram(getColourFrequencies());
 }
