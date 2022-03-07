@@ -1,0 +1,45 @@
+body{
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100vh;
+}
+.myBox{
+    border: 1px solid rgb(211, 211, 211);
+}
+
+.myContainer{
+    padding: 5px;
+    height: 100%;
+    display: grid;
+    grid-gap: 5px;
+    grid-template-rows: 1fr;
+    grid-template-columns: 1fr 25%;
+}
+.images{
+    padding: 5px;
+    display: grid;
+    grid-gap: 5px;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr;
+}
+.imageItem{
+    border: 1px solid rgb(0, 0, 0);
+}
+
+.controls{
+    padding: 5px;
+    display:grid;
+    grid-gap: 5px;
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(5 1fr);
+
+}
+.controllerItem{
+    border: 1px solid gray;
+}
+
+img{
+    width: 100%;
+    overflow: hidden;
+}
