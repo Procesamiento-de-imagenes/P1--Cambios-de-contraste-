@@ -40,7 +40,7 @@ function draw(img) {
       maxFrequency: maxFrequency,
     };
 
-    histogram (colourFrequencies)
+    histogram (colourFrequencies, maxFrequency)
     return result;
   }
 
