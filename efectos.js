@@ -1,5 +1,8 @@
+import histogram from './histograma.js'
+
 var img = new Image();
-img.src = "./descarga.png";
+img.crossOrigin = "Anonymous";
+img.src = "descarga.png";
 img.onload = function () {
   draw(this);
 };
@@ -18,14 +21,27 @@ function draw(img) {
   var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   var data = imageData.data;
 
-  var iMax = function(data){
-    var iMaxRed =0, iMaxGreen =0, iMaxBlue =0;
-    for (var i = 0; i < data.length; i += 4) {
-      if(iMaxRed    != 0) {iMaxRed    = data[i]   + data[i +3];}
-      if(iMaxGreen  != 0) {iMaxGreen  = data[i+2] + data[i +4];}
-      if(iMaxBlue   != 0) {iMaxBlue   = data[i+3] + data[i +5];}
-      
+  var getColourFrequencies = function() {
+    const startIndex = 0; // StartIndex same as RGB enum: R=0, G=1, B=2
+
+    let maxFrequency = 0;
+    const colourFrequencies = Array(256).fill(0);
+
+    for (let i = startIndex, len = data.length; i < len; i += 4) {
+      colourFrequencies[data[i]]++;
+
+      if (colourFrequencies[data[i]] > maxFrequency) {
+        maxFrequency++;
+      }
     }
+
+    const result = {
+      colourFrequencies: colourFrequencies,
+      maxFrequency: maxFrequency,
+    };
+
+    histogram (colourFrequencies, maxFrequency)
+    return result;
   }
 
   var invert = function () {
@@ -48,18 +64,16 @@ function draw(img) {
   };
   var averageContrast = function () {
     for (var i = 0; i < data.length; i += 4) {
-      var r = 
-      data[i] = ((data[i]-0)*255)/(255-0) ; // red
-      data[i + 1] = ((data[i + 1]-0)*255)/(255-0) ; // green
-      data[i + 2] = ((data[i + 2]-0)*255)/(255-0) ; // blue
+      var r = (data[i] = ((data[i] - 0) * 255) / (255 - 0)); // red
+      data[i + 1] = ((data[i + 1] - 0) * 255) / (255 - 0); // green
+      data[i + 2] = ((data[i + 2] - 0) * 255) / (255 - 0); // blue
     }
     ctxModify.putImageData(imageData, 0, 0);
   };
 
-  var btnNegative = document.getElementById('btn-negative');
-  btnNegative.addEventListener('click', invert)
+  var btnNegative = document.getElementById("btn-negative");
+  btnNegative.addEventListener("click", invert);
 
-  var btnAverageContrast = document.getElementById('btn-average-contrast');
-  btnAverageContrast.addEventListener('click', averageContrast)
-
+  var btnAverageContrast = document.getElementById("btn-average-contrast");
+  btnAverageContrast.addEventListener("click", getColourFrequencies);
 }
