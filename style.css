@@ -24,7 +24,7 @@ body{
     grid-template-rows: 1fr;
 }
 .imageItem{
-    border: 1px solid rgb(0, 0, 0);
+    border: 12px solid green;
 }
 
 .controls{
