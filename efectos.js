@@ -1,4 +1,4 @@
-import histogram from './histograma.js'
+import histogram from "./histograma.js";
 
 var img = new Image();
 img.crossOrigin = "Anonymous";
@@ -21,28 +21,33 @@ function draw(img) {
   var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   var data = imageData.data;
 
-  var getColourFrequencies = function() {
+  var getColourFrequencies = function () {
     const startIndex = 0; // StartIndex same as RGB enum: R=0, G=1, B=2
 
     let maxFrequency = 0;
-    const colourFrequencies = Array(256).fill(0);
+    const r = Array(256).fill(0);
+    const g = Array(256).fill(0);
+    const b = Array(256).fill(0);
 
     for (let i = startIndex, len = data.length; i < len; i += 4) {
-      colourFrequencies[data[i]]++;
+      r[data[i]]++;
+      g[data[i+1]]++;
+      b[data[i+2]]++;
 
-      if (colourFrequencies[data[i]] > maxFrequency) {
+      if (r[data[i]] > maxFrequency) {
         maxFrequency++;
       }
     }
 
     const result = {
-      colourFrequencies: colourFrequencies,
-      maxFrequency: maxFrequency,
+      r,
+      g, 
+      b,
+      maxFrequency,
     };
 
-    histogram (colourFrequencies, maxFrequency)
     return result;
-  }
+  };
 
   var invert = function () {
     for (var i = 0; i < data.length; i += 4) {
@@ -76,4 +81,6 @@ function draw(img) {
 
   var btnAverageContrast = document.getElementById("btn-average-contrast");
   btnAverageContrast.addEventListener("click", getColourFrequencies);
+
+  histogram(getColourFrequencies());
 }
