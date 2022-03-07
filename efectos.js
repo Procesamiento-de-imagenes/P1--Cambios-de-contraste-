@@ -2,7 +2,7 @@ import histogram from "./histograma.js";
 
 var img = new Image();
 img.crossOrigin = "Anonymous";
-img.src = "./image.jpg";
+img.src = "./descarga.png";
 img.onload = function () {
   draw(this);
 };
@@ -70,20 +70,28 @@ function draw(img) {
   };
   var automaticContrast = function () {
 
-    let r=[], g=[], b=[];
+    
+    let rMin = 255;
+    let gMin = 255;
+    let bMin = 255;
+
+    let rMax = 0;
+    let gMax = 0;
+    let bMax = 0;
+
+    let r=0, g=0, b=0;
 
     for (var i = 0; i < data.length; i += 4) {
-      r.push(data[i]);
-      g.push(data[i + 1]);
-      b.push(data[i + 2]);
+      if(rMin > data[i])       {rMin = data[i];}
+      if(gMin > data[i + 1])   {gMin = data[i + 1];}
+      if(bMin > data[i + 2])   {bMin = data[i + 2];}
+
+      if(rMax < data[i])       {rMax = data[i];     }
+      if(gMax < data[i + 1])   {gMax = data[i + 1]; } 
+      if(bMax < data[i + 2])   {bMax = data[i + 2]; }
     }
 
-    let rMin = Math.min.apply(null, r)
-    let gMin = Math.min.apply(null, g)
-    let bMin = Math.min.apply(null, b)
-    let rMax = Math.max.apply(null, r)
-    let gMax = Math.max.apply(null, g)
-    let bMax = Math.max.apply(null, b)
+    console.log(rMin, rMax);
 
     // console.log(
     //   rMin, rMax
