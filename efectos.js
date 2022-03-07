@@ -19,9 +19,11 @@ function draw(img) {
   img.style.display = "none";
 
   var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  var imageData1 = ctxModify.getImageData(0, 0, canvas.width, canvas.height);
+  var data1 = imageData1.data1;
   var data = imageData.data;
 
-  var getColourFrequencies = function() {
+  var getColourFrequencies = function () {
     const startIndex = 0; // StartIndex same as RGB enum: R=0, G=1, B=2
 
     let maxFrequency = 0;
@@ -40,9 +42,44 @@ function draw(img) {
       maxFrequency: maxFrequency,
     };
 
-    histogram (colourFrequencies, maxFrequency)
+    histogram(colourFrequencies, maxFrequency)
     return result;
   }
+
+  var brillo = function (k) {
+    data1 = data
+    var brightness = k || 100
+    console.log(data,data1)
+    for (var i = 0; i < data1.length; i += 4) {
+      data1[i] = data1[i] + brightness
+      data1[i + 1] = data1[i + 1] + brightness
+      data1[i + 2] = data1[i + 2] + brightness
+      
+      if (data1[i] > 255) {
+        data1[i] = 255;
+      }
+      if (data1[i + 1] > 255) {
+        data1[i + 1] = 255;
+      }
+      if (data1[i + 2] > 255) {
+        data1[i + 2] = 255;
+      }
+
+      if (data1[i] < -255) {
+        data1[i] = -255;
+      }
+      if (data1[i + 1] < -255) {
+        data1[i + 1] = -255;
+      }
+      if (data1[i + 2] < -255) {
+        data1[i + 2] = -255;
+      }
+    }
+    console.log(data,data1)
+
+    ctxModify.putImageData(imageData1, 0, 0);
+  };
+  
 
   var invert = function () {
     for (var i = 0; i < data.length; i += 4) {
@@ -70,6 +107,12 @@ function draw(img) {
     }
     ctxModify.putImageData(imageData, 0, 0);
   };
+
+
+  var brightness = document.getElementById("brightness");
+  brightness.oninput = function () {
+    brillo(brightness.value)
+  }
 
   var btnNegative = document.getElementById("btn-negative");
   btnNegative.addEventListener("click", invert);
