@@ -26,10 +26,10 @@
             <div class="controls">
                 <div class="brillo controllerItem">
                     <label for="brillo" class="form-label">Brillo</label>
-                    <input type="range" class="form-range" id="brillo" min="-255" max="255">    
+                    <input type="range" class="form-range" id="brillo" min="-255" max="255" step="1">    
                 </div>
                 <div class="automaticContrast controllerItem">
-                    <button class="btn btn-primary w-100" >Contraste automatico</button>
+                    <button class="btn btn-primary w-100" id="automaticContrast"  >Contraste automatico</button>
                 </div>
                 <div class="averageContrast controllerItem">
                     <label for="customRange1" class="form-label">Contraste promedio</label>
@@ -39,12 +39,12 @@
                     <button id="btn-negative" class="btn btn-warning w-100" >Negativo</button>
                 </div>
                 <div class="gray controllerItem">
-                    <button id="btn-gray" class="btn btn-warning w-100" >Escala de grises</button>
+                    <button id="btn-gray" class="btn btn-danger w-100" >Escala de grises</button>
                 </div>
                 
                 <div class="raiz controllerItem">
                     <label for="raiz-n-esima" class="form-label">Raiz n-esima</label>
-                    <input type="range" class="form-range" id="raiz-n-esima" min="0" max="2" step="0.1">    
+                    <input type="range" class="form-range" id="raiz-n-esima" min="1" max="100" step="1" value="2">    
                 </div>
             </div>
             <div class="histogram" id="tester">
