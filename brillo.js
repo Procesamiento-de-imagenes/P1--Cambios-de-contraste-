@@ -9,6 +9,7 @@ function draw(img) {
   var ctx = canvas.getContext("2d");
   ctx.drawImage(img, 0, 0);
   img.style.display = "none";
+
   var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   var data = imageData.data;
 
@@ -30,4 +31,11 @@ function draw(img) {
     }
     ctx.putImageData(imageData, 0, 0);
   };
+
+  var btnNegative = document.getElementById('btn-negative');
+  btnNegative.addEventListener('click', invert)
+
+  var btnAverageContrast = document.getElementById('btn-average-contrast');
+  btnAverageContrast.addEventListener('click', grayscale)
+
 }
