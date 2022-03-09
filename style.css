@@ -70,3 +70,14 @@ canvas{
     background-color:rgb(235, 235, 235);
     border-radius: 5px;
 }
+p{
+    padding:0;
+    margin: 0;
+}
+.creadits{
+    text-align: center;
+    color: gray;
+}
+a{
+    text-decoration: none;
+}
