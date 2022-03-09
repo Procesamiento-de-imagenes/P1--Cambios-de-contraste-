@@ -13,13 +13,15 @@
     <div class="myContainer">
         <div class="images myBox">
             <div class="originalImage imageItem">
-                <h3>Imagen original</h3>
+                <h4>Imagen original</h4>
                 <canvas id="original" >
                 </canvas>
+                <div class="histogram" id="orgImg"></div>
             </div>
             <div class="modifyImage imageItem">
-                <h3>Imagen modificada</h3>
-                <canvas id="modify" >
+                <h4>Imagen modificada</h4>
+                <canvas id="modify" ></canvas>
+                <div class="histogram" id="modImg"></div>
             </div>
         </div>
         <div class="rigthPanel">
@@ -47,9 +49,14 @@
                     <input type="range" class="form-range" id="raiz-n-esima" min="1" max="100" step="1" value="2">    
                 </div>
             </div>
-            <div class="histogram" id="tester">
-                
+            <div class="mb-3 text-center uploadDownload">
+                <label for="uploadImage" class="form-label">Subir imagen</label>
+                <input class="form-control" type="file" id="uploadImage">
+                <div class="controllerItem mt-2">
+                    <a  class="btn btn-primary w-100" id="btnDownload" download>Descargar imagen modificada</a>
+                </div>
             </div>
+
         </div>
     </div>
 </body>
