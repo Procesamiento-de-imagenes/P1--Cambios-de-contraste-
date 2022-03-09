@@ -1,4 +1,4 @@
-export default function graphHistogram(colourFrequencies) {
+export default function graphHistogram(colourFrequencies, div) {
   let r = colourFrequencies.r;
   let g = colourFrequencies.g;
   let b = colourFrequencies.b;
@@ -35,14 +35,12 @@ export default function graphHistogram(colourFrequencies) {
   var data = [blue, green, red];
   var layout = { 
     margin: {
-          l: 30,
+          l: 35,
           r: 50,
           b: 20,
           t: 20,
           pad: 4,
     },
   }
-  Plotly.newPlot("tester", data, layout);
-
-
+  Plotly.newPlot(div, data, layout);
 }

@@ -13,6 +13,7 @@ body{
 .myContainer{
     padding: 5px;
     height: 100%;
+    width: 100%;
     display: grid;
     grid-gap: 5px;
     grid-template-rows: 1fr;
@@ -20,15 +21,18 @@ body{
 }
 .images{
     padding: 5px;
-    display: grid;
-    grid-gap: 5px;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr;
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    justify-content: space-around;
 }
 .imageItem{
+    width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
+    /* border: 1px solid red; */
 }
 
 .rigthPanel{
@@ -45,22 +49,24 @@ body{
 
 }
 .controllerItem{
-    border: 1px solid rgb(216, 216, 216);
-    border-radius: 10px;
     padding: 5px;
     text-align: center;
 }
 
 .histogram{
+    width: 100%;
     height: 100%;
     padding: 0;
     margin: 0;
 }
 
-img{
-    width: 100%;
-    overflow: hidden;
-}
 canvas{
     width: 100%;
+}
+
+.uploadDownload{
+    padding: 5px;
+    margin: 5px 0 0 0;
+    background-color:rgb(235, 235, 235);
+    border-radius: 5px;
 }
