@@ -5,7 +5,7 @@ var btnDownload = document.getElementById('btnDownload');
 function validateFile(inputFile) {
   var route = inputFile.value;
 
-  var availableExtensions = /(.png|jpeg)$/i;
+  var availableExtensions = /(.png|.jpeg|.jpg|.PNG|.JPG|.JPEG)$/i;
 
   if (!availableExtensions.exec(route)) {
     console.log(route, availableExtensions);
@@ -35,6 +35,7 @@ function draw(img) {
   var canvas = document.getElementById("original");
   var modify = document.getElementById("modify");
 
+
   var ctx = canvas.getContext("2d");
   var ctxModify = modify.getContext("2d");
 
@@ -47,8 +48,10 @@ function draw(img) {
     newWidth = newHeight * ratio;
   }
   const xOffset = newWidth > canvas.width ? (canvas.width - newWidth) / 2 : 0;
-  const yOffset =
-    newHeight > canvas.height ? (canvas.height - newHeight) / 2 : 0;
+  const yOffset = newHeight > canvas.height ? (canvas.height - newHeight) / 2 : 0;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctxModify.clearRect(0, 0, canvas.width, canvas.height);
 
   ctx.drawImage(img, xOffset, yOffset, newWidth, newHeight);
   ctxModify.drawImage(img, xOffset, yOffset, newWidth, newHeight);
