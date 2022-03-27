@@ -1,7 +1,6 @@
 import histogram from "./histograma.js";
 var btnDownload = document.getElementById('btnDownload');
 
-
 function validateFile(inputFile) {
   var route = inputFile.value;
 
@@ -30,11 +29,9 @@ img.onload = function () {
   draw(this);
 };
 
-
 function draw(img) {
   var canvas = document.getElementById("original");
   var modify = document.getElementById("modify");
-
 
   var ctx = canvas.getContext("2d");
   var ctxModify = modify.getContext("2d");
@@ -58,12 +55,12 @@ function draw(img) {
 
   img.style.display = "none";
 
-  var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  var imageData     = ctx.getImageData(0, 0, canvas.width, canvas.height);
   var copyImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
   // get pixels
-  var data = imageData.data;
-  var copyData = copyImageData.data;
+  var data      = imageData.data;
+  var copyData  = copyImageData.data;
 
   var getColourFrequencies = function (data_) {
     const startIndex = 0; // StartIndex same as RGB enum: R=0, G=1, B=2
@@ -72,10 +69,11 @@ function draw(img) {
     const g = Array(256).fill(0);
     const b = Array(256).fill(0);
 
+
     for (let i = startIndex, len = data_.length; i < len; i += 4) {
-      r[data_[i]]++;
-      g[data_[i + 1]]++;
-      b[data_[i + 2]]++;
+      r[data_[i     ]]++;
+      g[data_[i + 1 ]]++;
+      b[data_[i + 2 ]]++;
     }
 
     const result = {
@@ -86,9 +84,60 @@ function draw(img) {
 
     return result;
   };
+
+  var colourFrequencies = getColourFrequencies(data)
+  var copyColourFrequencies = getColourFrequencies(data)
+
+  var getMaxAndMin = function(){
+    let rMin = 255;
+    let gMin = 255;
+    let bMin = 255;
+
+    let rMax = 0;
+    let gMax = 0;
+    let bMax = 0;
+
+    for (var i = 0; i < data.length; i += 4) {
+      if (rMin > data[i]) rMin = data[i];
+      if (gMin > data[i + 1]) gMin = data[i + 1];
+      if (bMin > data[i + 2]) bMin = data[i + 2];
+
+      if (rMax < data[i]) rMax = data[i];
+      if (gMax < data[i + 1]) gMax = data[i + 1];
+      if (bMax < data[i + 2]) bMax = data[i + 2];
+    }
+
+    return {rMin, gMin, bMin, rMax, gMax, bMax};
+  }
+  var getCumulativeDistribution = function(n, colorFrequency){
+    let  c=0;
+    for (let i = 0; i < n; i++) {
+      c = colorFrequency[i] + c;
+    }
+    return c;
+  }
+  var equalization = function (){
+    let  cR=0, cG=0, cB=0;
+    let limits = getMaxAndMin();
+
+    for (let i = 0; i < copyData.length; i += 4) {
+      cR = getCumulativeDistribution (copyData[i    ], colourFrequencies.r)
+      cG = getCumulativeDistribution (copyData[i + 1], colourFrequencies.g)
+      cB = getCumulativeDistribution (copyData[i + 2], colourFrequencies.b)
+
+      copyData[i    ] = Math.round(Math.abs(((cR-limits.rMin)/(data.length/4-limits.rMin))*255));
+      copyData[i + 1] = Math.round(Math.abs(((cG-limits.gMin)/(data.length/4-limits.gMin))*255));
+      copyData[i + 2] = Math.round(Math.abs(((cB-limits.bMin)/(data.length/4-limits.bMin))*255));
+    }
+    ctxModify.putImageData(copyImageData, 0, 0);
+    histogram(getColourFrequencies(copyData), 'modImg');
+    btnDownload.href = modify.toDataURL();
+  }
+ 
+
   var invert = function () {
     for (var i = 0; i < copyData.length; i += 4) {
-      copyData[i] = 255 - copyData[i]; // red
+      copyData[i    ] = 255 - copyData[i    ]; // red
       copyData[i + 1] = 255 - copyData[i + 1]; // green
       copyData[i + 2] = 255 - copyData[i + 2]; // blue
     }
@@ -109,46 +158,27 @@ function draw(img) {
     btnDownload.href = modify.toDataURL();
 
   };
+  
   var automaticContrast = function () {
-    let rMin = 255;
-    let gMin = 255;
-    let bMin = 255;
-
-    let rMax = 0;
-    let gMax = 0;
-    let bMax = 0;
-
-    let r = 0,
-      g = 0,
-      b = 0;
+    
+    let limits = getMaxAndMin();
 
     for (var i = 0; i < data.length; i += 4) {
-      if (rMin > data[i]) rMin = data[i];
-      if (gMin > data[i + 1]) gMin = data[i + 1];
-      if (bMin > data[i + 2]) bMin = data[i + 2];
+      copyData[i    ] = ((data[i]     - limits.rMin) / (limits.rMax - limits.rMin)) * 255; // red
+      copyData[i + 1] = ((data[i + 1] - limits.gMin) / (limits.gMax - limits.gMin)) * 255; // green
+      copyData[i + 2] = ((data[i + 2] - limits.bMin) / (limits.bMax - limits.bMin)) * 255; // blue
 
-      if (rMax < data[i]) rMax = data[i];
-      if (gMax < data[i + 1]) gMax = data[i + 1];
-      if (bMax < data[i + 2]) bMax = data[i + 2];
-    }
-
-    for (var i = 0; i < data.length; i += 4) {
-      copyData[i] = ((data[i] - rMin) / (rMax - rMin)) * 255; // red
-      copyData[i + 1] = ((data[i + 1] - gMin) / (gMax - gMin)) * 255; // green
-      copyData[i + 2] = ((data[i + 2] - bMin) / (bMax - bMin)) * 255; // blue
-
-      if (copyData[i] > 255) copyData[i] = 255;
+      if (copyData[i    ] > 255) copyData[i    ] = 255;
       if (copyData[i + 1] > 255) copyData[i + 1] = 255;
       if (copyData[i + 2] > 255) copyData[i + 2] = 255;
 
-      if (copyData[i] < 0) copyData[i] = 0;
+      if (copyData[i    ] < 0) copyData[i] = 0;
       if (copyData[i + 1] < 0) copyData[i + 1] = 0;
       if (copyData[i + 2] < 0) copyData[i + 2] = 0;
     }
     ctxModify.putImageData(copyImageData, 0, 0);
     histogram(getColourFrequencies(copyData), 'modImg');
     btnDownload.href = modify.toDataURL();
-
   };
   var brillo = function (k) {
     var brightness = k || 100;
@@ -184,7 +214,7 @@ function draw(img) {
     promedio = promedio / copyData.length;
 
     for (var i = 0; i < copyData.length; i += 4) {
-      copyData[i] = k * (data[i] - promedio) + promedio; // red
+      copyData[i    ] = k * (data[i    ] - promedio) + promedio; // red
       copyData[i + 1] = k * (data[i + 1] - promedio) + promedio; // green
       copyData[i + 2] = k * (data[i + 2] - promedio) + promedio; // blue
 
@@ -248,6 +278,9 @@ function draw(img) {
   var btnAutomaticContrast = document.getElementById("automaticContrast");
   btnAutomaticContrast.addEventListener("click", automaticContrast);
 
+  var btnEqualization = document.getElementById("btn-equalization");
+  btnEqualization.addEventListener("click", equalization);
+
   // Upload Image
   var uploadImage = document.getElementById("uploadImage");
   uploadImage.onchange = (e) => {
@@ -256,6 +289,6 @@ function draw(img) {
   btnDownload.href = modify.toDataURL();
 
   // generate histogram
-  histogram(getColourFrequencies(data), 'orgImg');
-  histogram(getColourFrequencies(copyData), 'modImg');
+  histogram(colourFrequencies, 'orgImg');
+  histogram(copyColourFrequencies, 'modImg');
 }
