@@ -28,6 +28,11 @@ img.src = "./image.jpg";
 img.onload = function () {
   draw(this);
 };
+var isGrayScale= false;
+var auxBrrllo = 0;
+var auxContrast = 0;
+var auxRaiz = 0;
+
 
 function draw(img) {
   var canvas = document.getElementById("original");
@@ -131,16 +136,16 @@ function draw(img) {
       copyData[i + 2] = Math.round(Math.abs(((cB-limits.bMin)/(data.length/4-limits.bMin))*255));
     }
     ctxModify.putImageData(copyImageData, 0, 0);
-    histogram(getColourFrequencies(copyData), 'modImg');
+    histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
     btnDownload.href = modify.toDataURL();
   }
  
-  var convolution = function(data, copyData, kernel, divisor, offset) {
+  var convolution = function (data, copyData, kernel, divisor, offset) {
     let w = newWidth, h = newHeight;
-
+    // get matrix dimensions
     let rowOffset = Math.floor(kernel.length/2);
     let colOffset = Math.floor(kernel[0].length/2);
-
+    
     for (let row = 0; row < h; row++) {
       for (let col = 0; col < w; col++) {
         var result = [0, 0, 0];
@@ -173,7 +178,7 @@ function draw(img) {
       }
     }
     ctxModify.putImageData(copyImageData, 0, 0);
-    histogram(getColourFrequencies(copyData), 'modImg');
+    histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
     btnDownload.href = modify.toDataURL();
 
     return copyData;
@@ -186,19 +191,20 @@ function draw(img) {
       copyData[i + 2] = 255 - copyData[i + 2]; // blue
     }
     ctxModify.putImageData(copyImageData, 0, 0);
-    histogram(getColourFrequencies(copyData), 'modImg');
+    histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
     btnDownload.href = modify.toDataURL();
 
   };
   var grayscale = function () {
+
     for (var i = 0; i < copyData.length; i += 4) {
       var avg = (copyData[i] + copyData[i + 1] + copyData[i + 2]) / 3;
-      copyData[i] = avg; // red
+      copyData[i    ] = avg; // red
       copyData[i + 1] = avg; // green
       copyData[i + 2] = avg; // blue
     }
     ctxModify.putImageData(copyImageData, 0, 0);
-    histogram(getColourFrequencies(copyData), 'modImg');
+    histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
     btnDownload.href = modify.toDataURL();
 
   };
@@ -207,10 +213,10 @@ function draw(img) {
     
     let limits = getMaxAndMin();
 
-    for (var i = 0; i < data.length; i += 4) {
-      copyData[i    ] = ((data[i]     - limits.rMin) / (limits.rMax - limits.rMin)) * 255; // red
-      copyData[i + 1] = ((data[i + 1] - limits.gMin) / (limits.gMax - limits.gMin)) * 255; // green
-      copyData[i + 2] = ((data[i + 2] - limits.bMin) / (limits.bMax - limits.bMin)) * 255; // blue
+    for (var i = 0; i < copyData.length; i += 4) {
+      copyData[i    ] = ((copyData[i]     - limits.rMin) / (limits.rMax - limits.rMin)) * 255; // red
+      copyData[i + 1] = ((copyData[i + 1] - limits.gMin) / (limits.gMax - limits.gMin)) * 255; // green
+      copyData[i + 2] = ((copyData[i + 2] - limits.bMin) / (limits.bMax - limits.bMin)) * 255; // blue
 
       if (copyData[i    ] > 255) copyData[i    ] = 255;
       if (copyData[i + 1] > 255) copyData[i + 1] = 255;
@@ -221,34 +227,36 @@ function draw(img) {
       if (copyData[i + 2] < 0) copyData[i + 2] = 0;
     }
     ctxModify.putImageData(copyImageData, 0, 0);
-    histogram(getColourFrequencies(copyData), 'modImg');
+    histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
     btnDownload.href = modify.toDataURL();
   };
   var brillo = function (k) {
     var brightness = k || 100;
     for (var i = 0; i < copyData.length; i += 4) {
       if (copyData[i] < k) {
-        copyData[i]     = data[i] + brightness;
+        copyData[i    ] = data[i    ] + brightness;
         copyData[i + 1] = data[i + 1] + brightness;
         copyData[i + 2] = data[i + 2] + brightness;
       }
 
       if (copyData[i] > k) {
-        copyData[i]     = data[i] - brightness;
-        copyData[i + 1] = data[i + 1] - brightness;
-        copyData[i + 2] = data[i + 2] - brightness;
+        copyData[i    ] =data[i    ] - brightness;
+        copyData[i + 1] =data[i + 1] - brightness;
+        copyData[i + 2] =data[i + 2] - brightness;
       }
 
-      if (copyData[i]     > 255) copyData[i] = 255;
+      if (copyData[i    ] > 255) copyData[i    ] = 255;
       if (copyData[i + 1] > 255) copyData[i + 1] = 255;
       if (copyData[i + 2] > 255) copyData[i + 2] = 255;
 
-      if (copyData[i] < 0) copyData[i] = 0;
-      if (copyData[i + 1] < 0) copyData[i + 1] = 0;
-      if (copyData[i + 2] < 0) copyData[i + 2] = 0;
+      if (copyData[i    ] < 0) copyData[i     ] = 0;
+      if (copyData[i + 1] < 0) copyData[i +  1] = 0;
+      if (copyData[i + 2] < 0) copyData[i +  2] = 0;
     }
+    auxBrrllo = (k-auxBrrllo) * -1;
+
     ctxModify.putImageData(copyImageData, 0, 0);
-    histogram(getColourFrequencies(copyData), 'modImg');
+    histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
     btnDownload.href = modify.toDataURL();
 
   };
@@ -271,7 +279,7 @@ function draw(img) {
       if (copyData[i + 2] < 0) copyData[i + 2] = 0;
     }
     ctxModify.putImageData(copyImageData, 0, 0);
-    histogram(getColourFrequencies(copyData), 'modImg');
+    histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
     btnDownload.href = modify.toDataURL();
 
   };
@@ -293,24 +301,12 @@ function draw(img) {
       if (copyData[i + 2] < 0) copyData[i + 2] = 0;
     }
     ctxModify.putImageData(copyImageData, 0, 0);
-    histogram(getColourFrequencies(copyData), 'modImg');
+    histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
     btnDownload.href = modify.toDataURL();
 
   };
 
-  // range input
-  var inputAverageContrast = document.getElementById("average-contrast");
-  inputAverageContrast.oninput = (e) => {
-    averageContrast(inputAverageContrast.value);
-  };
-  var inputRaizN = document.getElementById("raiz-n-esima");
-  inputRaizN.onchange = (e) => {
-    raizNEsima(inputRaizN.value);
-  };
-  var inputBrillo = document.getElementById("brillo");
-  inputBrillo.oninput = (e) => {
-    brillo(inputBrillo.value);
-  };
+
 
   var pasaBajos = function(){
     let kernel = [[1,1,1],[1,1,1],[1,1,1]];
@@ -332,12 +328,43 @@ function draw(img) {
     convolution(data, copyData, kernel, 1/9, 0)
   }
 
+  var reset = function(){
+    for (let i = 0; i < copyData.length; i++) {
+      copyData[i] = imageData.data[i]
+    }
+
+    ctxModify.putImageData(copyImageData, 0, 0);
+    histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
+  }
+
+  // range input
+  var inputAverageContrast = document.getElementById("average-contrast");
+  inputAverageContrast.oninput = (e) => {
+    averageContrast(inputAverageContrast.value);
+  };
+  var inputRaizN = document.getElementById("raiz-n-esima");
+  inputRaizN.onchange = (e) => {
+    raizNEsima(inputRaizN.value);
+  };
+  var valueBrillo = document.getElementById("valueBrillo");
+  var inputBrillo = document.getElementById("brillo");
+  inputBrillo.oninput = (e) => {
+    brillo(inputBrillo.value);
+    inputBrillo.title = inputBrillo.value;
+    valueBrillo.innerHTML = inputBrillo.value;
+  };
+
+  
+
   // buttons
   var btnNegative = document.getElementById("btn-negative");
   btnNegative.addEventListener("click", invert);
 
-  var btnAverageContrast = document.getElementById("btn-gray");
-  btnAverageContrast.addEventListener("click", grayscale);
+  var checkBoxGrayScale = document.getElementById("btn-gray");
+  checkBoxGrayScale.addEventListener("click", (e)=>{
+    isGrayScale = checkBoxGrayScale.checked;
+    checkBoxGrayScale.checked?grayscale():reset();
+  });
 
   var btnAutomaticContrast = document.getElementById("automaticContrast");
   btnAutomaticContrast.addEventListener("click", automaticContrast);
@@ -346,7 +373,6 @@ function draw(img) {
   btnEqualization.addEventListener("click", equalization);
 
   // Select
-
   var convolutionSelect = document.getElementById("convolutionSelect");
   convolutionSelect.addEventListener("change", ()=>{
     switch(convolutionSelect.selectedIndex){
@@ -374,5 +400,5 @@ function draw(img) {
 
   // generate histogram
   histogram(colourFrequencies, 'orgImg');
-  histogram(copyColourFrequencies, 'modImg');
+  histogram(copyColourFrequencies, 'modImg', isGrayScale);
 }
