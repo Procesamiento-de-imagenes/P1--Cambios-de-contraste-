@@ -126,14 +126,24 @@ function draw(img) {
     let  cR=0, cG=0, cB=0;
     let limits = getMaxAndMin();
 
-    for (let i = 0; i < copyData.length; i += 4) {
-      cR = getCumulativeDistribution (copyData[i    ], colourFrequencies.r)
-      cG = getCumulativeDistribution (copyData[i + 1], colourFrequencies.g)
-      cB = getCumulativeDistribution (copyData[i + 2], colourFrequencies.b)
-
-      copyData[i    ] = Math.round(Math.abs(((cR-limits.rMin)/(data.length/4-limits.rMin))*255));
-      copyData[i + 1] = Math.round(Math.abs(((cG-limits.gMin)/(data.length/4-limits.gMin))*255));
-      copyData[i + 2] = Math.round(Math.abs(((cB-limits.bMin)/(data.length/4-limits.bMin))*255));
+    if(isGrayScale){
+      for (let i = 0; i < copyData.length; i += 4) {
+        cR = getCumulativeDistribution (copyData[i    ], colourFrequencies.r)
+  
+        copyData[i    ] = Math.round(Math.abs(((cR-limits.rMin)/(data.length/4-limits.rMin))*255));
+        copyData[i + 1] = Math.round(Math.abs(((cR-limits.gMin)/(data.length/4-limits.gMin))*255));
+        copyData[i + 2] = Math.round(Math.abs(((cR-limits.bMin)/(data.length/4-limits.bMin))*255));
+      }
+    }else{
+      for (let i = 0; i < copyData.length; i += 4) {
+        cR = getCumulativeDistribution (copyData[i    ], colourFrequencies.r)
+        cG = getCumulativeDistribution (copyData[i + 1], colourFrequencies.g)
+        cB = getCumulativeDistribution (copyData[i + 2], colourFrequencies.b)
+  
+        copyData[i    ] = Math.round(Math.abs(((cR-limits.rMin)/(data.length/4-limits.rMin))*255));
+        copyData[i + 1] = Math.round(Math.abs(((cG-limits.gMin)/(data.length/4-limits.gMin))*255));
+        copyData[i + 2] = Math.round(Math.abs(((cB-limits.bMin)/(data.length/4-limits.bMin))*255));
+      }
     }
     ctxModify.putImageData(copyImageData, 0, 0);
     histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
@@ -328,35 +338,35 @@ function draw(img) {
     convolution(data, copyData, kernel, 1/9, 0)
   }
 
-  var reset = function(){
-    for (let i = 0; i < copyData.length; i++) {
-      copyData[i] = imageData.data[i]
-    }
 
-    ctxModify.putImageData(copyImageData, 0, 0);
-    histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
-  }
 
   // range input
+  var valueContrast = document.getElementById("valueContrast");
   var inputAverageContrast = document.getElementById("average-contrast");
   inputAverageContrast.oninput = (e) => {
     averageContrast(inputAverageContrast.value);
+    valueContrast.innerHTML = inputAverageContrast.value;
   };
+
+  var valueRaiz = document.getElementById("valueRaiz");
   var inputRaizN = document.getElementById("raiz-n-esima");
   inputRaizN.onchange = (e) => {
     raizNEsima(inputRaizN.value);
+    valueRaiz.innerHTML = inputRaizN.value;
   };
   var valueBrillo = document.getElementById("valueBrillo");
   var inputBrillo = document.getElementById("brillo");
   inputBrillo.oninput = (e) => {
     brillo(inputBrillo.value);
-    inputBrillo.title = inputBrillo.value;
     valueBrillo.innerHTML = inputBrillo.value;
   };
 
   
 
   // buttons
+  var btnReset = document.getElementById("btnReset");
+  btnReset.onclick = (e) => {reset();};
+
   var btnNegative = document.getElementById("btn-negative");
   btnNegative.addEventListener("click", invert);
 
@@ -401,4 +411,15 @@ function draw(img) {
   // generate histogram
   histogram(colourFrequencies, 'orgImg');
   histogram(copyColourFrequencies, 'modImg', isGrayScale);
+
+  var reset = function(){
+    for (let i = 0; i < copyData.length; i++) {
+      copyData[i] = imageData.data[i]
+    }
+
+    ctxModify.putImageData(copyImageData, 0, 0);
+    checkBoxGrayScale.checked = false;
+    isGrayScale = checkBoxGrayScale.checked;
+    histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
+  }
 }

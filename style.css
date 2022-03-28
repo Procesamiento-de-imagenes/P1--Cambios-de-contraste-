@@ -79,7 +79,8 @@ a{
     text-decoration: none;
 }
 .values{
-    background-color: rgb(231, 231, 231);
-    border: 1px solid gray;
+    background-color: rgb(247, 247, 247);
+    border: 1px solid rgb(211, 211, 211);
     border-radius: 3px;
+    padding: 0 2px 0 2px;
 }
