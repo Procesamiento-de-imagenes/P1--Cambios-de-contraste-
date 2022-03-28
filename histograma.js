@@ -14,7 +14,7 @@ export default function graphHistogram(colourFrequencies, div, grayscale) {
         opacity: 0.8,
         color: 'rgb(100, 100, 100)',
       },
-      name: "Red"
+      name: "Gray"
   
     };
     data = [gray];
