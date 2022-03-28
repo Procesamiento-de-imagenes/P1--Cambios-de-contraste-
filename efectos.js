@@ -40,6 +40,7 @@ function draw(img) {
   const ratio = img.width / img.height;
   let newWidth = canvas.width;
   let newHeight = newWidth / ratio;
+
   if (newHeight < canvas.height) {
     newHeight = canvas.height;
     newWidth = newHeight * ratio;
@@ -134,6 +135,49 @@ function draw(img) {
     btnDownload.href = modify.toDataURL();
   }
  
+  var convolution = function(data, copyData, kernel, divisor, offset) {
+    let w = newWidth, h = newHeight;
+
+    let rowOffset = Math.floor(kernel.length/2);
+    let colOffset = Math.floor(kernel[0].length/2);
+
+    for (let row = 0; row < h; row++) {
+      for (let col = 0; col < w; col++) {
+        var result = [0, 0, 0];
+
+        for (let kRow = 0; kRow < kernel.length; kRow++) {
+          for (let kCol = 0; kCol < kernel[kRow].length; kCol++) {
+            var kVal = kernel[kRow][kCol];
+
+            var pixelRow = row + kRow - rowOffset;
+            var pixelCol = col + kCol - colOffset;
+
+            if(pixelRow < 0 || pixelRow >=h || pixelCol <0 || pixelCol >=w) 
+              continue
+            
+            var srcIndex = (pixelRow * w + pixelCol)*4;
+
+            for (let chanel = 0; chanel < 3; chanel++) {
+                let pixel = data[srcIndex + chanel];
+                result[chanel] += pixel * kVal;
+            }
+
+          }
+        }
+        var dstIndex = (row * w + col)*3;
+
+        for (let chanel = 0; chanel < 3; chanel++) {
+            let val = result[chanel]/divisor + offset;    
+            copyData [dstIndex + chanel] =val;    
+        }
+      }
+    }
+    ctxModify.putImageData(copyImageData, 0, 0);
+    histogram(getColourFrequencies(copyData), 'modImg');
+    btnDownload.href = modify.toDataURL();
+
+    return copyData;
+  }
 
   var invert = function () {
     for (var i = 0; i < copyData.length; i += 4) {
@@ -268,6 +312,26 @@ function draw(img) {
     brillo(inputBrillo.value);
   };
 
+  var pasaBajos = function(){
+    let kernel = [[1,1,1],[1,1,1],[1,1,1]];
+    convolution(data, copyData, kernel, 1/9, 0)
+  }
+
+  var pasaAltos = function(){
+    let kernel = [[-1,-1,-1],[-1, 8,-1],[-1,-1,-1]];
+    convolution(data, copyData, kernel, 1/9, 0)
+  }
+
+  var pasaBanda = function(){
+    let kernel = [[1,1,1],[1,1,1],[1,1,1]];
+    convolution(data, copyData, kernel, 1/9, 0)
+  }
+
+  var highBoost = function(a){
+    let kernel = [[1,-a,1],[-a,a^2,-a],[1,-a,1]];
+    convolution(data, copyData, kernel, 1/9, 0)
+  }
+
   // buttons
   var btnNegative = document.getElementById("btn-negative");
   btnNegative.addEventListener("click", invert);
@@ -280,6 +344,26 @@ function draw(img) {
 
   var btnEqualization = document.getElementById("btn-equalization");
   btnEqualization.addEventListener("click", equalization);
+
+  // Select
+
+  var convolutionSelect = document.getElementById("convolutionSelect");
+  convolutionSelect.addEventListener("change", ()=>{
+    switch(convolutionSelect.selectedIndex){
+      case 1:
+        pasaBajos();
+        break;
+      case 2:
+        pasaAltos();
+        break;
+      case 3:
+        pasaBanda();
+        break;
+      case 3:
+        highBoost();
+        break;        
+    }
+  });
 
   // Upload Image
   var uploadImage = document.getElementById("uploadImage");
