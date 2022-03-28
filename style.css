@@ -69,6 +69,7 @@ canvas{
 p{
     padding:0;
     margin: 0;
+    display: inline;
 }
 .creadits{
     text-align: center;
@@ -76,4 +77,9 @@ p{
 }
 a{
     text-decoration: none;
+}
+.values{
+    background-color: rgb(231, 231, 231);
+    border: 1px solid gray;
+    border-radius: 3px;
 }
