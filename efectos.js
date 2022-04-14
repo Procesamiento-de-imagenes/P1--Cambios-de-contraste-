@@ -149,51 +149,48 @@ function draw(img) {
     histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
     btnDownload.href = modify.toDataURL();
   }
- 
-  var convolution = function (data, copyData, kernel, divisor, offset) {
-    let w = newWidth, h = newHeight;
-    // get matrix dimensions
-    let rowOffset = Math.floor(kernel.length/2);
-    let colOffset = Math.floor(kernel[0].length/2);
-    
-    for (let row = 0; row < h; row++) {
-      for (let col = 0; col < w; col++) {
-        var result = [0, 0, 0];
-
-        for (let kRow = 0; kRow < kernel.length; kRow++) {
-          for (let kCol = 0; kCol < kernel[kRow].length; kCol++) {
-            var kVal = kernel[kRow][kCol];
-
-            var pixelRow = row + kRow - rowOffset;
-            var pixelCol = col + kCol - colOffset;
-
-            if(pixelRow < 0 || pixelRow >=h || pixelCol <0 || pixelCol >=w) 
-              continue
-            
-            var srcIndex = (pixelRow * w + pixelCol)*4;
-
-            for (let chanel = 0; chanel < 3; chanel++) {
-                let pixel = data[srcIndex + chanel];
-                result[chanel] += pixel * kVal;
+  var convolute = function(pixels, weights) {
+    var side = Math.round(Math.sqrt(weights.length));
+    var halfSide = Math.floor(side/2);
+    var src = pixels.data;
+    var sw = pixels.width;
+    var sh = pixels.height;
+    // pad output by the convolution matrix
+    var w = sw;
+    var h = sh;
+    var dst = copyImageData.data;
+    // go through the destination image pixels
+    for (var y=0; y<h; y++) {
+      for (var x=0; x<w; x++) {
+        var sy = y;
+        var sx = x;
+        var dstOff = (y*w+x)*4;
+        // calculate the weighed sum of the source image pixels that
+        // fall under the convolution matrix
+        var r=0, g=0, b=0, a=0;
+        for (var cy=0; cy<side; cy++) {
+          for (var cx=0; cx<side; cx++) {
+            var scy = sy + cy - halfSide;
+            var scx = sx + cx - halfSide;
+            if (scy >= 0 && scy < sh && scx >= 0 && scx < sw) {
+              var srcOff = (scy*sw+scx)*4;
+              var wt = weights[cy*side+cx];
+              r += src[srcOff] * wt;
+              g += src[srcOff+1] * wt;
+              b += src[srcOff+2] * wt;
             }
-
           }
         }
-        var dstIndex = (row * w + col)*3;
-
-        for (let chanel = 0; chanel < 3; chanel++) {
-            let val = result[chanel]/divisor + offset;    
-            copyData [dstIndex + chanel] =val;    
-        }
+        dst[dstOff] = r;
+        dst[dstOff+1] = g;
+        dst[dstOff+2] = b;
       }
     }
     ctxModify.putImageData(copyImageData, 0, 0);
-    histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
+    histogram(getColourFrequencies(dst), 'modImg', isGrayScale);
     btnDownload.href = modify.toDataURL();
-
-    return copyData;
+    return dst;
   }
-
   var invert = function () {
     for (var i = 0; i < copyData.length; i += 4) {
       copyData[i    ] = 255 - copyData[i    ]; // red
@@ -218,7 +215,6 @@ function draw(img) {
     btnDownload.href = modify.toDataURL();
 
   };
-  
   var automaticContrast = function () {
     
     let limits = getMaxAndMin();
@@ -236,6 +232,7 @@ function draw(img) {
       if (copyData[i + 1] < 0) copyData[i + 1] = 0;
       if (copyData[i + 2] < 0) copyData[i + 2] = 0;
     }
+
     ctxModify.putImageData(copyImageData, 0, 0);
     histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
     btnDownload.href = modify.toDataURL();
@@ -317,19 +314,25 @@ function draw(img) {
   };
 
 
-
   var pasaBajos = function(){
-    let kernel = [[1,1,1],[1,1,1],[1,1,1]];
-    convolution(data, copyData, kernel, 1/9, 0)
+    let kernel = 
+    [  1/9, 1/9,  1/9,
+       1/9, 1/9,  1/9,
+       1/9, 1/9,  1/9 ];
+    convolute(imageData, kernel)
   }
 
   var pasaAltos = function(){
-    let kernel = [[-1,-1,-1],[-1, 8,-1],[-1,-1,-1]];
-    convolution(data, copyData, kernel, 1/9, 0)
+    let kernel = [-1,-1,-1,
+                  -1, 8,-1,
+                  -1,-1,-1];
+    convolute(imageData, kernel)
   }
 
   var pasaBanda = function(){
-    let kernel = [[1,1,1],[1,1,1],[1,1,1]];
+    let kernel = [1,1,1,
+                  1,1,1,
+                  1,1,1];
     convolution(data, copyData, kernel, 1/9, 0)
   }
 

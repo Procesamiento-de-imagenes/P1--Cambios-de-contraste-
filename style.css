@@ -38,6 +38,7 @@ body{
 .rigthPanel{
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
 }
 
 .controls{
@@ -74,6 +75,8 @@ p{
 .creadits{
     text-align: center;
     color: gray;
+    align-self: center;
+    justify-items: start;
 }
 a{
     text-decoration: none;
