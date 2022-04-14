@@ -11,7 +11,7 @@ body{
 }
 
 .myContainer{
-    padding: 5px;
+    padding: 1px;
     height: 100%;
     width: 100%;
     display: grid;
@@ -32,17 +32,26 @@ body{
     display: flex;
     flex-direction: column;
     align-items: center;
-    /* border: 1px solid red; */
 }
 
 .rigthPanel{
-    display: flex;
-    flex-direction: column;
-}
-
-.controls{
     display:grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: 100%;
+    justify-content: space-around;
+    max-height: 100vh;
+    overflow: auto;
+}
+.deslizadores{
+    display: grid;
+    grid-template-columns: 1fr 25%;
+    grid-template-rows: 1fr;
+    grid-gap: 5px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid rgb(228, 228, 228);
+}
+.controls{
+    overflow: auto;
+    max-height: 100%;
 }
 .controllerItem{
     padding: 2px;
@@ -74,6 +83,7 @@ p{
 .creadits{
     text-align: center;
     color: gray;
+    align-self: center;
 }
 a{
     text-decoration: none;
