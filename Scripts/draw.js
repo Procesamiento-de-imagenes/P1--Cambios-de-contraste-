@@ -408,7 +408,6 @@ function draw(img) {
                   ];
     }
     kernel = kernel.map(x => x*(Math.pow(1/a+2, 2)))
-    console.log(kernel);
     convolute(imageData, kernel)
   }
 
@@ -416,10 +415,20 @@ function draw(img) {
     let kernel = [1,1,1,
       1,1,1,
       1,1,1];
-    convolute(imageData, kernel)
+    // convolute(imageData, kernel)
   }
-
-
+  var highBoostPasaBajos = function(a){
+    let kernel = [1,1,1,
+      1,1,1,
+      1,1,1];
+    // convolute(imageData, kernel)
+  }
+  var highBoostPasaAltos = function(a){
+    let kernel = [1,1,1,
+      1,1,1,
+      1,1,1];
+    // convolute(imageData, kernel)
+  }
 
   // range input
   var inputAverageContrast = document.getElementById("averageContrast");
@@ -469,26 +478,55 @@ function draw(img) {
   btnEqualization.addEventListener("click", equalization);
 
   // convolutions
-var pasaBajosBtn = document.getElementById("pasaBajos");
-var pasaAltosBtn = document.getElementById("pasaAltos");
+  var pasaBajosBtn = document.getElementById("pasaBajos");
+  var pasaAltosBtn = document.getElementById("pasaAltos");
 
-var pasaBandasRange = document.getElementById("pasaBandasRange");
-var pasaBandasNumber = document.getElementById("pasaBandasNumber");
+  pasaBajosBtn.addEventListener("click",(e)=>{pasaBajos();})
+  pasaAltosBtn.addEventListener("click",(e)=>{pasaAltos();;})
 
-var higthBoostBtn = document.getElementById("higthBoost");
+  var pasaBandasRange = document.getElementById("pasaBandasRange");
+  var pasaBandasNumber = document.getElementById("pasaBandasNumber");
 
-pasaBajosBtn.addEventListener("click",(e)=>{pasaBajos();})
-pasaAltosBtn.addEventListener("click",(e)=>{pasaAltos();;})
+  pasaBandasRange.oninput = (e) => {
+    pasaBanda(pasaBandasNumber.value)
+  }
+  pasaBandasNumber.oninput = (e) => {
+    pasaBanda(pasaBandasNumber.value)
+  }
 
-pasaBandasRange.oninput = (e) => {
-  pasaBanda(pasaBandasNumber.value)
-}
-pasaBandasNumber.oninput = (e) => {
-  pasaBanda(pasaBandasNumber.value)
-}
+  // High boost
+  var HighBoostRange = document.getElementById("HighBoostRange");
+  var HighBoostNumber = document.getElementById("HighBoostNumber");
+
+  HighBoostNumber.onchange = (e) => {
+    highBoost(HighBoostNumber.value)
+  }
+  HighBoostRange.onchange = (e) => {
+    highBoost(HighBoostNumber.value)
+  }
+
+  var HBPasaBajosRange = document.getElementById("HBPasaBajosRange");
+  var HBPasaBajosNumber = document.getElementById("HBPasaBajosNumber");
+
+  HBPasaBajosNumber.onchange = (e) => {
+    highBoost(HBPasaBajosNumber.value)
+  }
+  HBPasaBajosRange.onchange = (e) => {
+    highBoost(HBPasaBajosNumber.value)
+  }
 
 
-higthBoostBtn.addEventListener("click",(e)=>{highBoost();})
+  var HBPasaAltosRange = document.getElementById("HBPasaAltosRange");
+  var HBPasaAltosNumber = document.getElementById("HBPasaAltosNumber");
+
+  HBPasaAltosRange.onchange = (e) => {
+    highBoost(HBPasaAltosNumber.value)
+  }
+  HBPasaAltosNumber.onchange = (e) => {
+    highBoost(HBPasaAltosNumber.value)
+  }
+
+
 
 
   // Upload Image
