@@ -1,12 +1,34 @@
 import histogram from "./histograma.js";
+import Inputs from "./inputs.js";
+
 var btnDownload = document.getElementById('btnDownload');
 
-
+var inputs = new Inputs()
+inputs.generateInputs(3)
 
 // Kernel size
 var btnKernel3x3 = document.getElementById('btnKernel3x3');
 var btnKernel5x5 = document.getElementById('btnKernel5x5');
 var btnKernel7x7 = document.getElementById('btnKernel7x7');
+
+
+btnKernel3x3.addEventListener('click',(e)=>{
+  if(btnKernel3x3.checked) {
+    inputs.generateInputs(3)
+  }
+})
+btnKernel5x5.addEventListener('click',(e)=>{
+  if(btnKernel5x5.checked) {
+    inputs.generateInputs(5)
+  }
+})
+btnKernel7x7.addEventListener('click',(e)=>{
+  if(btnKernel7x7.checked) {
+    inputs.generateInputs(7)
+  }
+})
+
+
 
 
 
@@ -158,8 +180,8 @@ function draw(img) {
     histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
     btnDownload.href = modify.toDataURL();
   }
-  var convolute = function(pixels, weights) {
-    var side = Math.round(Math.sqrt(weights.length));
+  var convolute = function(pixels, kernel, apply) {
+    var side = Math.round(Math.sqrt(kernel.length));
     var halfSide = Math.floor(side/2);
     var src = pixels.data;
     var sw = pixels.width;
@@ -167,8 +189,8 @@ function draw(img) {
     // pad output by the convolution matrix
     var w = sw;
     var h = sh;
-    var dst = copyImageData.data;
     // go through the destination image pixels
+    let copyPixels = copyData
     for (var y=0; y<h; y++) {
       for (var x=0; x<w; x++) {
         var sy = y;
@@ -183,22 +205,25 @@ function draw(img) {
             var scx = sx + cx - halfSide;
             if (scy >= 0 && scy < sh && scx >= 0 && scx < sw) {
               var srcOff = (scy*sw+scx)*4;
-              var wt = weights[cy*side+cx];
-              r += src[srcOff] * wt;
+              var wt = kernel[cy*side+cx];
+              r += src[srcOff]   * wt;
               g += src[srcOff+1] * wt;
               b += src[srcOff+2] * wt;
             }
           }
         }
-        dst[dstOff] = r;
-        dst[dstOff+1] = g;
-        dst[dstOff+2] = b;
+        copyPixels[dstOff]    = r;
+        copyPixels[dstOff+1]  = g;
+        copyPixels[dstOff+2]  = b;
       }
     }
-    ctxModify.putImageData(copyImageData, 0, 0);
-    histogram(getColourFrequencies(dst), 'modImg', isGrayScale);
-    btnDownload.href = modify.toDataURL();
-    return dst;
+    if(apply){
+      copyData = copyPixels
+      ctxModify.putImageData(copyImageData, 0, 0);
+      histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
+      btnDownload.href = modify.toDataURL();
+    }
+    return copyPixels;
   }
   var invert = function () {
     for (var i = 0; i < copyData.length; i += 4) {
@@ -210,6 +235,54 @@ function draw(img) {
     histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
     btnDownload.href = modify.toDataURL();
 
+  }
+  var noLineales = function(pixels, side, apply) {
+    console.log('entro');
+
+    var halfSide = Math.floor(side/2);
+    var src = pixels.data;
+    var sw = pixels.width;
+    var sh = pixels.height;
+    // pad output by the convolution matrix
+    var w = sw;
+    var h = sh;
+    // go through the destination image pixels
+    let copyPixels = copyData
+    for (var y=0; y<h; y++) {
+      for (var x=0; x<w; x++) {
+        var sy = y;
+        var sx = x;
+        var dstOff = (y*w+x)*4;
+        // calculate the weighed sum of the source image pixels that
+        // fall under the convolution matrix
+        var r=0, g=0, b=0, a=0;
+        for (var cy=0; cy<side; cy++) {
+          for (var cx=0; cx<side; cx++) {
+            var scy = sy + cy - halfSide;
+            var scx = sx + cx - halfSide;
+            if (scy >= 0 && scy < sh && scx >= 0 && scx < sw) {
+              var srcOff = (scy*sw+scx)*4;
+              // r += src[srcOff  ];
+              // g += src[srcOff+1];
+              // b += src[srcOff+2];
+            }
+          }
+        }
+        copyPixels[dstOff]    = r;
+        copyPixels[dstOff+1]  = g;
+        copyPixels[dstOff+2]  = b;
+
+        console.log('s',r, g, b);
+
+      }
+    }
+    if(apply){
+      copyData = copyPixels
+      ctxModify.putImageData(copyImageData, 0, 0);
+      histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
+      btnDownload.href = modify.toDataURL();
+    }
+    return copyPixels;
   };
   var grayscale = function () {
 
@@ -323,7 +396,7 @@ function draw(img) {
   };
 
 
-  var pasaBajos = function(){
+  var pasaBajos = function(apply){
     if(btnKernel3x3.checked){
       var kernel = 
                 [  1/9, 1/9,  1/9,
@@ -349,10 +422,10 @@ function draw(img) {
          1/49, 1/49,  1/49,  1/49, 1/49, 1/49, 1/49
         ];
     }
-    convolute(imageData, kernel)
+    return convolute(imageData, kernel, apply)
   }
 
-  var pasaAltos = function(){
+  var pasaAltos = function(apply){
     if(btnKernel3x3.checked){
       var kernel = 
                 [-1,-1,-1,
@@ -378,10 +451,10 @@ function draw(img) {
                   -1, -1,  -1,  -1,  -1  ,-1,  -1
                   ];
     }
-    convolute(imageData, kernel)
+    return convolute(imageData, kernel, apply)
   }
 
-  var pasaBanda = function(a){
+  var pasaBanda = function(a, apply){
     if(btnKernel3x3.checked){
       var kernel = 
                 [ 1,  -a,   1,
@@ -408,27 +481,76 @@ function draw(img) {
                   ];
     }
     kernel = kernel.map(x => x*(Math.pow(1/a+2, 2)))
-    convolute(imageData, kernel)
+    convolute(imageData, kernel, apply)
   }
 
   var highBoost = function(a){
-    let kernel = [1,1,1,
-      1,1,1,
-      1,1,1];
-    // convolute(imageData, kernel)
+    let pasaBajosData = pasaBajos(false);
+
+    for (var i = 0; i < copyData.length; i += 4) {
+
+      copyData[i    ] = (a*data[i    ]) - pasaBajosData[i    ]; // red
+      copyData[i + 1] = (a*data[i + 1]) - pasaBajosData[i + 1]; // green
+      copyData[i + 2] = (a*data[i + 2]) - pasaBajosData[i + 2]; // blue
+
+      if (copyData[i] > 255) copyData[i] = 255;
+      if (copyData[i] <   0) copyData[i] = 0;
+    }
+    console.log(copyData);
+    
+    ctxModify.putImageData(copyImageData, 0, 0);
+    histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
+    btnDownload.href = modify.toDataURL();
   }
+
   var highBoostPasaBajos = function(a){
-    let kernel = [1,1,1,
-      1,1,1,
-      1,1,1];
-    // convolute(imageData, kernel)
+    let pasaBajosData = pasaBajos(false);
+
+    for (var i = 0; i < copyData.length; i += 4) {
+
+      copyData[i    ] = (a-1)*(data[i    ])   +  data[i    ] - pasaBajosData[i    ]; // red
+      copyData[i + 1] = (a-1)*(data[i + 1])   +  data[i + 1] - pasaBajosData[i + 1]; // green
+      copyData[i + 2] = (a-1)*(data[i + 2])   +  data[i + 2] - pasaBajosData[i + 2]; // blue
+
+      if (copyData[i] > 255) copyData[i] = 255;
+      if (copyData[i] <   0) copyData[i] = 0;
+    }
+    console.log(copyData);
+    ctxModify.putImageData(copyImageData, 0, 0);
+    histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
+    btnDownload.href = modify.toDataURL();
   }
   var highBoostPasaAltos = function(a){
-    let kernel = [1,1,1,
-      1,1,1,
-      1,1,1];
-    // convolute(imageData, kernel)
+    let pasaAltosData = pasaAltos(false);
+
+    for (var i = 0; i < copyData.length; i += 4) {
+
+      copyData[i    ] = (a-1)*(data[i    ])+data[i] - pasaAltosData[i    ]; // red
+      copyData[i + 1] = (a-1)*(data[i + 1])+data[i + 1] - pasaAltosData[i + 1]; // green
+      copyData[i + 2] = (a-1)*(data[i + 2])+data[i + 2] - pasaAltosData[i + 2]; // blue
+
+      if (copyData[i] > 255) copyData[i] = 255;
+      if (copyData[i] <   0) copyData[i] = 0;
+    }
+  
+    ctxModify.putImageData(copyImageData, 0, 0);
+    histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
+    btnDownload.href = modify.toDataURL();
   }
+
+  var maximoFn = function(){
+    noLineales(data, 3)
+  }
+  var minimoFn = function(){
+
+  }
+  var mediaFn = function(){
+
+  }
+  var modaFn = function(){
+
+  }
+
 
   // range input
   var inputAverageContrast = document.getElementById("averageContrast");
@@ -479,19 +601,19 @@ function draw(img) {
 
   // convolutions
   var pasaBajosBtn = document.getElementById("pasaBajos");
-  var pasaAltosBtn = document.getElementById("pasaAltos");
+  pasaBajosBtn.addEventListener("click",(e)=>{pasaBajos(true);})
 
-  pasaBajosBtn.addEventListener("click",(e)=>{pasaBajos();})
-  pasaAltosBtn.addEventListener("click",(e)=>{pasaAltos();;})
+  var pasaAltosBtn = document.getElementById("pasaAltos");
+  pasaAltosBtn.addEventListener("click",(e)=>{pasaAltos(true);;})
 
   var pasaBandasRange = document.getElementById("pasaBandasRange");
   var pasaBandasNumber = document.getElementById("pasaBandasNumber");
 
   pasaBandasRange.oninput = (e) => {
-    pasaBanda(pasaBandasNumber.value)
+    pasaBanda(pasaBandasNumber.value, true)
   }
   pasaBandasNumber.oninput = (e) => {
-    pasaBanda(pasaBandasNumber.value)
+    pasaBanda(pasaBandasNumber.value, true)
   }
 
   // High boost
@@ -509,10 +631,10 @@ function draw(img) {
   var HBPasaBajosNumber = document.getElementById("HBPasaBajosNumber");
 
   HBPasaBajosNumber.onchange = (e) => {
-    highBoost(HBPasaBajosNumber.value)
+    highBoostPasaBajos(HBPasaBajosNumber.value)
   }
   HBPasaBajosRange.onchange = (e) => {
-    highBoost(HBPasaBajosNumber.value)
+    highBoostPasaBajos(HBPasaBajosNumber.value)
   }
 
 
@@ -520,12 +642,38 @@ function draw(img) {
   var HBPasaAltosNumber = document.getElementById("HBPasaAltosNumber");
 
   HBPasaAltosRange.onchange = (e) => {
-    highBoost(HBPasaAltosNumber.value)
+    highBoostPasaAltos(HBPasaAltosNumber.value)
   }
   HBPasaAltosNumber.onchange = (e) => {
-    highBoost(HBPasaAltosNumber.value)
+    highBoostPasaAltos(HBPasaAltosNumber.value)
   }
+// Matriz personalizada 
+  var form = document.getElementById('inputMatrixGroup');
+  form.addEventListener('submit', (e) => {
+    e.preventDefault()
+    let matrix = inputs.getInputMatrix();
+    return convolute(imageData, matrix, true)
+  })
+  
+// Filtros no lineales 
+  var maximo = document.getElementById('maximo')
+  var minimo = document.getElementById('minimo')
+  var mediana = document.getElementById('mediana')
+  var moda= document.getElementById('moda')
 
+  maximo.addEventListener('click', ()=>{
+    maximoFn()
+  })
+
+  minimo.addEventListener('click', ()=>{
+    minimoFn()
+  })
+  mediana.addEventListener('click', ()=>{
+    mediaFn()
+  })
+  moda.addEventListener('click', ()=>{
+    modaFn()
+  })
 
 
 

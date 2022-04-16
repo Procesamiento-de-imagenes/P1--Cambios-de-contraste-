@@ -50,6 +50,7 @@ body{
     border-bottom: 1px solid rgb(228, 228, 228);
 }
 .controls{
+    border: 1px solid rgb(228, 228, 228);
     overflow: auto;
     max-height: 100%;
 }
@@ -93,4 +94,35 @@ a{
     border: 1px solid rgb(211, 211, 211);
     border-radius: 3px;
     padding: 0 2px 0 2px;
+}
+
+.accordionMatrixInput{
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    overflow: auto;
+}
+.matrixFactor{
+    width: 40px;
+    height: 28px;
+}
+#inputMatrixGroup{
+    display: grid;
+    grid-gap: 5px;
+} 
+.inputMatrix{
+    width: 40px;
+}
+
+.inputMatrix::-webkit-outer-spin-button,
+.inputMatrix::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+  -moz-appearance: textfield;
+}
+.matrixFactor::-webkit-outer-spin-button,
+.matrixFactor::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+  -moz-appearance: textfield;
 }
