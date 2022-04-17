@@ -29,9 +29,6 @@ btnKernel7x7.addEventListener('click',(e)=>{
 })
 
 
-
-
-
 function validateFile(inputFile) {
   var route = inputFile.value;
 
@@ -96,8 +93,6 @@ function draw(img) {
   // get pixels
   var data      = imageData.data;
   var copyData  = copyImageData.data;
-
-
 
   var getColourFrequencies = function (data_) {
     const startIndex = 0; // StartIndex same as RGB enum: R=0, G=1, B=2
@@ -225,6 +220,241 @@ function draw(img) {
     }
     return copyPixels;
   }
+  var noLinealMinimo = function(pixels, side) {
+
+    let min = 255;
+
+    var halfSide = Math.floor(side/2);
+    var src = pixels.data;
+    var sw = pixels.width;
+    var sh = pixels.height;
+    // pad output by the convolution matrix
+    var w = sw;
+    var h = sh;
+    // go through the destination image pixels
+    for (var y=0; y<h; y++) {
+      for (var x=0; x<w; x++) {
+        var sy = y;
+        var sx = x;
+        var dstOff = (y*w+x)*4;
+        // calculate the weighed sum of the source image pixels that
+        // fall under the convolution matrix
+        for (var cy=0; cy<side; cy+=3) {
+          for (var cx=0; cx<side; cx++) {
+            var scy = sy + cy - halfSide;
+            var scx = sx + cx - halfSide;
+            if (scy >= 0 && scy < sh && scx >= 0 && scx < sw) {
+              var srcOff = (scy*sw+scx)*4;
+              min = 255;
+              if (min > src[srcOff]  ) min = src[srcOff];
+              if (min > src[srcOff+1]) min = src[srcOff+1];
+              if (min > src[srcOff+2]) min = src[srcOff+2];
+            }
+          }
+        }
+        copyData[dstOff]    = min;
+        copyData[dstOff+1]  = min;
+        copyData[dstOff+2]  = min;
+      }
+    }
+    ctxModify.putImageData(copyImageData, 0, 0);
+    histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
+    btnDownload.href = modify.toDataURL();
+    
+    return copyData;
+  };
+  var noLinealMediana = function(pixels, side) {
+    let vecindad = new Array();
+    let mediana;
+    var halfSide = Math.floor(side/2);
+    var src = pixels.data;
+    var sw = pixels.width;
+    var sh = pixels.height;
+    // pad output by the convolution matrix
+    var w = sw;
+    var h = sh;
+    // go through the destination image pixels
+
+    for (var y=0; y<h; y++) {
+      for (var x=0; x<w; x++) {
+        var sy = y;
+        var sx = x;
+        var dstOff = (y*w+x)*4;
+        // calculate the weighed sum of the source image pixels that
+        // fall under the convolution matrix
+        for (var cy=0; cy<side; cy+=3) {
+          for (var cx=0; cx<side; cx++) {
+            vecindad = []
+            var scy = sy + cy - halfSide;
+            var scx = sx + cx - halfSide;
+            if (scy >= 0 && scy < sh && scx >= 0 && scx < sw) {
+              var srcOff = (scy*sw+scx)*4;
+              vecindad.push(src[srcOff    ])
+              vecindad.push(src[srcOff + 1])
+              vecindad.push(src[srcOff + 2])
+              mediana = quickselect_median(vecindad)
+            }
+          }
+        }
+        copyData[dstOff]    = mediana;
+        copyData[dstOff+1]  = mediana;
+        copyData[dstOff+2]  = mediana;
+      }
+    }
+    ctxModify.putImageData(copyImageData, 0, 0);
+    histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
+    btnDownload.href = modify.toDataURL();
+    
+    return copyData;
+  };
+  // Trying some array
+
+  function quickselect_median(arr) {
+    const L = arr.length, halfL = L/2;
+    if (L % 2 == 1)
+        return quickselect(arr, halfL);
+    else
+        return 0.5 * (quickselect(arr, halfL - 1) + quickselect(arr, halfL));
+  }
+
+  function quickselect(arr, k) {
+    // Select the kth element in arr
+    // arr: List of numerics
+    // k: Index
+    // return: The kth element (in numerical order) of arr
+    if (arr.length == 1)
+        return arr[0];
+    else {
+        const pivot = arr[0];
+        const lows = arr.filter((e)=>(e<pivot));
+        const highs = arr.filter((e)=>(e>pivot));
+        const pivots = arr.filter((e)=>(e==pivot));
+        if (k < lows.length) // the pivot is too high
+          return quickselect(lows, k);
+        else if (k < lows.length + pivots.length)// We got lucky and guessed the median
+          return pivot;
+        else // the pivot is too low
+          return quickselect(highs, k - lows.length - pivots.length);
+    }
+  }
+  
+  var noLinealMaximo = function(pixels, side) {
+
+    let max = 0;
+
+    var halfSide = Math.round(side/2);
+    var src = pixels.data;
+    var sw = pixels.width;
+    var sh = pixels.height;
+    // pad output by the convolution matrix
+    var w = sw;
+    var h = sh;
+    // go through the destination image pixels
+    for (var y=0; y<h; y++) {
+      for (var x=0; x<w; x++) {
+        var sy = y;
+        var sx = x;
+        var dstOff = (y*w+x)*4;
+        for (var cy=0; cy<side; cy++) {
+          for (var cx=0; cx<side; cx+=4) {
+            var scy = sy + cy - halfSide;
+            var scx = sx + cx - halfSide;
+            if (scy >= 0 && scy < sh && scx >= 0 && scx < sw) {
+              max = 0;
+              var srcOff = (scy*sw+scx)*4;
+              if (max < src[srcOff]  ) max = src[srcOff];
+              if (max < src[srcOff+1]) max = src[srcOff+1];
+              if (max < src[srcOff+2]) max = src[srcOff+2];
+            }
+          }
+        }
+        copyData[dstOff]    = max;
+        copyData[dstOff+1]  = max;
+        copyData[dstOff+2]  = max;
+      }
+    }
+    ctxModify.putImageData(copyImageData, 0, 0);
+    histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
+    btnDownload.href = modify.toDataURL();
+    
+    return copyData;
+  };
+  function calcularFrecuencia(numero, vector){
+    var num_veces=0
+    for (var pos in vector) {
+        if (vector[pos]==numero) {
+            num_veces++
+        }
+    }
+    return num_veces
+  }
+  function obtenerPosMayor(vector_valores){
+    var posMayor=0
+    var numMayor=vector_valores[0]
+    for (var pos in vector_valores){
+        if (vector_valores[pos]>numMayor) {
+            numMayor=vector_valores[pos]
+            posMayor=pos
+        }
+    }
+    return posMayor
+  }
+  function obtenerModa(vector_valores){
+    var frecuencias=new Array(vector_valores.length)
+    for (var pos in vector_valores){
+         var numero=vector_valores[pos]
+         frecuencias[pos]=calcularFrecuencia(numero, vector_valores)
+    }
+    var posModa=obtenerPosMayor(frecuencias)
+    return vector_valores[posModa]
+
+  }
+  var noLinealModa = function(pixels, side) {
+    let vecindad = new Array();
+    let n = new Array();
+    let moda;
+    var halfSide = Math.floor(side/2);
+    var src = pixels.data;
+    var sw = pixels.width;
+    var sh = pixels.height;
+    // pad output by the convolution matrix
+    var w = sw;
+    var h = sh;
+    // go through the destination image pixels
+
+    for (var y=0; y<h; y++) {
+      for (var x=0; x<w; x++) {
+        var sy = y;
+        var sx = x;
+        var dstOff = (y*w+x)*4;
+        // calculate the weighed sum of the source image pixels that
+        // fall under the convolution matrix
+        for (var cy=0; cy<side; cy+=3) {
+          for (var cx=0; cx<side; cx++) {
+            vecindad = []
+            var scy = sy + cy - halfSide;
+            var scx = sx + cx - halfSide;
+            if (scy >= 0 && scy < sh && scx >= 0 && scx < sw) {
+              var srcOff = (scy*sw+scx)*4;
+              vecindad.push(src[srcOff    ])
+              vecindad.push(src[srcOff + 1])
+              vecindad.push(src[srcOff + 2])
+              moda = obtenerModa(vecindad)
+              n.push(moda)
+            }
+          }
+        }
+        copyData[dstOff]    = moda;
+        copyData[dstOff+1]  = moda;
+        copyData[dstOff+2]  = moda;
+      }
+    }
+    ctxModify.putImageData(copyImageData, 0, 0);
+    histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
+    btnDownload.href = modify.toDataURL();
+    
+    return copyData;
+  }
   var invert = function () {
     for (var i = 0; i < copyData.length; i += 4) {
       copyData[i    ] = 255 - copyData[i    ]; // red
@@ -236,54 +466,6 @@ function draw(img) {
     btnDownload.href = modify.toDataURL();
 
   }
-  var noLineales = function(pixels, side, apply) {
-    console.log('entro');
-
-    var halfSide = Math.floor(side/2);
-    var src = pixels.data;
-    var sw = pixels.width;
-    var sh = pixels.height;
-    // pad output by the convolution matrix
-    var w = sw;
-    var h = sh;
-    // go through the destination image pixels
-    let copyPixels = copyData
-    for (var y=0; y<h; y++) {
-      for (var x=0; x<w; x++) {
-        var sy = y;
-        var sx = x;
-        var dstOff = (y*w+x)*4;
-        // calculate the weighed sum of the source image pixels that
-        // fall under the convolution matrix
-        var r=0, g=0, b=0, a=0;
-        for (var cy=0; cy<side; cy++) {
-          for (var cx=0; cx<side; cx++) {
-            var scy = sy + cy - halfSide;
-            var scx = sx + cx - halfSide;
-            if (scy >= 0 && scy < sh && scx >= 0 && scx < sw) {
-              var srcOff = (scy*sw+scx)*4;
-              // r += src[srcOff  ];
-              // g += src[srcOff+1];
-              // b += src[srcOff+2];
-            }
-          }
-        }
-        copyPixels[dstOff]    = r;
-        copyPixels[dstOff+1]  = g;
-        copyPixels[dstOff+2]  = b;
-
-        console.log('s',r, g, b);
-
-      }
-    }
-    if(apply){
-      copyData = copyPixels
-      ctxModify.putImageData(copyImageData, 0, 0);
-      histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
-      btnDownload.href = modify.toDataURL();
-    }
-    return copyPixels;
-  };
   var grayscale = function () {
 
     for (var i = 0; i < copyData.length; i += 4) {
@@ -394,8 +576,6 @@ function draw(img) {
     btnDownload.href = modify.toDataURL();
 
   };
-
-
   var pasaBajos = function(apply){
     if(btnKernel3x3.checked){
       var kernel = 
@@ -424,7 +604,6 @@ function draw(img) {
     }
     return convolute(imageData, kernel, apply)
   }
-
   var pasaAltos = function(apply){
     if(btnKernel3x3.checked){
       var kernel = 
@@ -453,7 +632,6 @@ function draw(img) {
     }
     return convolute(imageData, kernel, apply)
   }
-
   var pasaBanda = function(a, apply){
     if(btnKernel3x3.checked){
       var kernel = 
@@ -483,7 +661,6 @@ function draw(img) {
     kernel = kernel.map(x => x*(Math.pow(1/a+2, 2)))
     convolute(imageData, kernel, apply)
   }
-
   var highBoost = function(a){
     let pasaBajosData = pasaBajos(false);
 
@@ -502,7 +679,6 @@ function draw(img) {
     histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
     btnDownload.href = modify.toDataURL();
   }
-
   var highBoostPasaBajos = function(a){
     let pasaBajosData = pasaBajos(false);
 
@@ -537,20 +713,18 @@ function draw(img) {
     histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
     btnDownload.href = modify.toDataURL();
   }
-
   var maximoFn = function(){
-    noLineales(data, 3)
+    noLinealMaximo(imageData, 3)
   }
   var minimoFn = function(){
-
+    noLinealMinimo(imageData, 3)
   }
   var mediaFn = function(){
-
+    noLinealMediana(imageData, 3)
   }
   var modaFn = function(){
 
   }
-
 
   // range input
   var inputAverageContrast = document.getElementById("averageContrast");
@@ -672,7 +846,7 @@ function draw(img) {
     mediaFn()
   })
   moda.addEventListener('click', ()=>{
-    modaFn()
+    noLinealModa(imageData, 3)
   })
 
 
