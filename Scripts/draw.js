@@ -239,7 +239,7 @@ function draw(img) {
         var dstOff = (y*w+x)*4;
         // calculate the weighed sum of the source image pixels that
         // fall under the convolution matrix
-        for (var cy=0; cy<side; cy+=3) {
+        for (var cy=0; cy<side; cy++) {
           for (var cx=0; cx<side; cx++) {
             var scy = sy + cy - halfSide;
             var scx = sx + cx - halfSide;
@@ -282,7 +282,7 @@ function draw(img) {
         var dstOff = (y*w+x)*4;
         // calculate the weighed sum of the source image pixels that
         // fall under the convolution matrix
-        for (var cy=0; cy<side; cy+=3) {
+        for (var cy=0; cy<side; cy++) {
           for (var cx=0; cx<side; cx++) {
             vecindad = []
             var scy = sy + cy - halfSide;
@@ -356,7 +356,7 @@ function draw(img) {
         var sx = x;
         var dstOff = (y*w+x)*4;
         for (var cy=0; cy<side; cy++) {
-          for (var cx=0; cx<side; cx+=4) {
+          for (var cx=0; cx<side; cx++) {
             var scy = sy + cy - halfSide;
             var scx = sx + cx - halfSide;
             if (scy >= 0 && scy < sh && scx >= 0 && scx < sw) {
@@ -429,7 +429,7 @@ function draw(img) {
         var dstOff = (y*w+x)*4;
         // calculate the weighed sum of the source image pixels that
         // fall under the convolution matrix
-        for (var cy=0; cy<side; cy+=3) {
+        for (var cy=0; cy<side; cy++) {
           for (var cx=0; cx<side; cx++) {
             vecindad = []
             var scy = sy + cy - halfSide;
@@ -608,23 +608,23 @@ function draw(img) {
     if(btnKernel3x3.checked){
       var kernel = 
                 [-1,-1,-1,
-                  -1, 9,-1,
+                  -1, 8,-1,
                   -1,-1,-1
                 ];
     }else if(btnKernel5x5.checked){
       var kernel = 
                 [  -1, -1,  -1, -1, -1,
                    -1, -1,  -1, -1, -1,
-                   -1, -1,  25, -1, -1,
+                   -1, -1,  23, -1, -1,
                    -1, -1,  -1, -1, -1,
-                   -1, -1,  -1,  -1, -1
+                   -1, -1,  -1, -1, -1
                   ];
     }else{
       var kernel = 
                 [ -1, -1,  -1,  -1,  -1,  -1,  -1,
                   -1, -1,  -1,  -1,  -1,  -1,  -1,
                   -1, -1,  -1,  -1,  -1,  -1,  -1,
-                  -1, -1,  -1,  49,  -1,  -1,  -1,
+                  -1, -1,  -1,  48,  -1,  -1,  -1,
                   -1, -1,  -1,  -1,  -1,  -1,  -1,
                   -1, -1,  -1,  -1,  -1,  -1,  -1,
                   -1, -1,  -1,  -1,  -1  ,-1,  -1
@@ -661,24 +661,7 @@ function draw(img) {
     kernel = kernel.map(x => x*(Math.pow(1/a+2, 2)))
     convolute(imageData, kernel, apply)
   }
-  var highBoost = function(a){
-    let pasaBajosData = pasaBajos(false);
 
-    for (var i = 0; i < copyData.length; i += 4) {
-
-      copyData[i    ] = (a*data[i    ]) - pasaBajosData[i    ]; // red
-      copyData[i + 1] = (a*data[i + 1]) - pasaBajosData[i + 1]; // green
-      copyData[i + 2] = (a*data[i + 2]) - pasaBajosData[i + 2]; // blue
-
-      if (copyData[i] > 255) copyData[i] = 255;
-      if (copyData[i] <   0) copyData[i] = 0;
-    }
-    console.log(copyData);
-    
-    ctxModify.putImageData(copyImageData, 0, 0);
-    histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
-    btnDownload.href = modify.toDataURL();
-  }
   var highBoostPasaBajos = function(a){
     let pasaBajosData = pasaBajos(false);
 
@@ -691,7 +674,6 @@ function draw(img) {
       if (copyData[i] > 255) copyData[i] = 255;
       if (copyData[i] <   0) copyData[i] = 0;
     }
-    console.log(copyData);
     ctxModify.putImageData(copyImageData, 0, 0);
     histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
     btnDownload.href = modify.toDataURL();
@@ -712,18 +694,6 @@ function draw(img) {
     ctxModify.putImageData(copyImageData, 0, 0);
     histogram(getColourFrequencies(copyData), 'modImg', isGrayScale);
     btnDownload.href = modify.toDataURL();
-  }
-  var maximoFn = function(){
-    noLinealMaximo(imageData, 3)
-  }
-  var minimoFn = function(){
-    noLinealMinimo(imageData, 3)
-  }
-  var mediaFn = function(){
-    noLinealMediana(imageData, 3)
-  }
-  var modaFn = function(){
-
   }
 
   // range input
@@ -791,16 +761,6 @@ function draw(img) {
   }
 
   // High boost
-  var HighBoostRange = document.getElementById("HighBoostRange");
-  var HighBoostNumber = document.getElementById("HighBoostNumber");
-
-  HighBoostNumber.onchange = (e) => {
-    highBoost(HighBoostNumber.value)
-  }
-  HighBoostRange.onchange = (e) => {
-    highBoost(HighBoostNumber.value)
-  }
-
   var HBPasaBajosRange = document.getElementById("HBPasaBajosRange");
   var HBPasaBajosNumber = document.getElementById("HBPasaBajosNumber");
 
@@ -810,7 +770,6 @@ function draw(img) {
   HBPasaBajosRange.onchange = (e) => {
     highBoostPasaBajos(HBPasaBajosNumber.value)
   }
-
 
   var HBPasaAltosRange = document.getElementById("HBPasaAltosRange");
   var HBPasaAltosNumber = document.getElementById("HBPasaAltosNumber");
@@ -836,14 +795,13 @@ function draw(img) {
   var moda= document.getElementById('moda')
 
   maximo.addEventListener('click', ()=>{
-    maximoFn()
+    noLinealMaximo(imageData, 3)
   })
-
   minimo.addEventListener('click', ()=>{
-    minimoFn()
+    noLinealMinimo(imageData, 3)
   })
   mediana.addEventListener('click', ()=>{
-    mediaFn()
+    noLinealMediana(imageData, 3)
   })
   moda.addEventListener('click', ()=>{
     noLinealModa(imageData, 3)
