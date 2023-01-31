@@ -1,6 +1,8 @@
 # Cambios de contraste - Procesamiento de imágenes
 
 Aplicación web que permite aplicar filtros a una imagen y ver en tiempo real su histograma. 
+
+
 https://procesamiento-de-imagenes.github.io/P1--Cambios-de-contraste-/
 ![image](https://user-images.githubusercontent.com/93720978/163727143-0007849d-e1c2-4ec1-ba18-34d2a0c06269.png)
 
@@ -8,6 +10,9 @@ https://procesamiento-de-imagenes.github.io/P1--Cambios-de-contraste-/
 Los filtros se realizan directamente con cada uno de los pixeles del canvas, todas las operaciones matriciales (convoluciones, transpuestas, determinantes, etc..) fueron programadas en JavaScript nativo.
 
 La aplicación web cuenta con 17 filtros aplicables, incluyendo convoluciones, lineales y no lineales y de ajuste de contraste.
+
+
+
 ![image](https://user-images.githubusercontent.com/93720978/204661071-065f8643-e578-4def-a49b-cd198b87b3c2.png)
 
 El usuario puede ingresar su propia matriz 3x3, 5x5 y 7x7, para aplicar su propio filtro convolucional. 
